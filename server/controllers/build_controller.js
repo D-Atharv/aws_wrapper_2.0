@@ -1,5 +1,7 @@
 const { cloneAndBuildRepo } = require('../services/build_service');
-const { uploadToS3 } = require('../services/s3_service');
+const { enableStaticWebsiteHosting, setBucketPolicy } = require('../services/s3_service');
+const { bucketName, awsRegion } = require('../configs/config');
+
 async function startBuild(req, resp, next) {
     const { githubURL } = req.body;
 
@@ -8,14 +10,16 @@ async function startBuild(req, resp, next) {
     }
 
     try {
-        //cloning and building project directly onto server
-        //TODO -> later switch to using docker
-        const buildDir = await cloneAndBuildRepo(githubURL);
+        const s3URL = await cloneAndBuildRepo(githubURL);
 
-        //upload build to s3
-        const s3URL = await uploadToS3(buildDir);
+        await enableStaticWebsiteHosting();
+        // await setBucketPolicy();
 
-        resp.status(200).json({ status: 'success', message: 'Build successful', s3URL });
+        resp.status(200).json({
+            status: 'success',
+            message: 'Build successful',
+            s3URL: `https://${bucketName}.s3.${awsRegion}.amazonaws.com/${s3URL}`
+        });
     } catch (error) {
         next(error);
     }
@@ -23,4 +27,4 @@ async function startBuild(req, resp, next) {
 
 module.exports = {
     startBuild
-}
+};
