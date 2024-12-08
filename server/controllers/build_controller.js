@@ -1,5 +1,5 @@
 const { cloneAndBuildRepo } = require('../services/build_service');
-const { enableStaticWebsiteHosting, setBucketPolicy } = require('../services/s3_service');
+const {enableStaticWebsiteHosting} = require('../services/static_hosting')
 const { bucketName, awsRegion } = require('../configs/config');
 
 async function startBuild(req, resp, next) {

@@ -1,6 +1,7 @@
 const { execPromise } = require('../utils/logger');
 const { uploadToS3 } = require('./s3_service');
 const path = require('path');
+const fs = require('fs');
 
 async function cloneAndBuildRepo(githubURL) {
     //TODO -> BUILD IN DOCKER FILE
@@ -13,7 +14,11 @@ async function cloneAndBuildRepo(githubURL) {
         console.log(`Successfully cloned into ${buildDir}`);
 
         console.log(`Building ${githubURL}`);
-        await execPromise(`cd "${buildDir}" && npm install`);
+        const hasYarn = fs.existsSync(path.join(buildDir, 'yarn.lock'));
+        const installCommand = hasYarn ? 'yarn install' : 'npm install';
+        await execPromise(`cd "${buildDir}" && ${installCommand}`);
+        console.log(`Successfully installed dependencies in ${buildDir}`);
+        // await execPromise(`cd "${buildDir}" && npm install`);
 
         // Check if the build script exists before running it
         const packageJson = path.join(buildDir, 'package.json');
@@ -36,3 +41,4 @@ async function cloneAndBuildRepo(githubURL) {
 module.exports = {
     cloneAndBuildRepo
 };
+

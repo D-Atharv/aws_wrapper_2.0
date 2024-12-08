@@ -1,30 +1,15 @@
-const { S3Client, PutObjectCommand, PutBucketWebsiteCommand, PutBucketPolicyCommand } = require('@aws-sdk/client-s3');
+const {  PutObjectCommand } = require('@aws-sdk/client-s3');
 const { bucketName, awsRegion, accessKeyId, secretAccessKey } = require("../configs/config");
+const { getAllFiles } = require('../utils/file_utils')
 const fs = require('fs');
 const path = require('path');
-
-const s3Client = new S3Client({
-    region: awsRegion,
-    credentials: {
-        accessKeyId: accessKeyId,
-        secretAccessKey: secretAccessKey
-    }
-});
-
-function getAllFiles(dirPath, filesList = []) {
-    const files = fs.readdirSync(dirPath);
-
-    for (const file of files) {
-        const filePath = path.join(dirPath, file);
-        if (fs.statSync(filePath).isDirectory()) {
-            getAllFiles(filePath, filesList); // Recursively traverse directories
-        } else {
-            filesList.push(filePath); // Add file to the list
-        }
-    }
-
-    return filesList;
-}
+const {s3Client} = require('../configs/s3Client-config');
+/**
+ * Uploads all files from a directory to S3.
+ * @param {string} buildDir - The directory containing the build files.
+ * @param {string} folderPrefix - Optional prefix for uploaded files in S3.
+ * @returns {string} The default document name (e.g., index.html).
+ */
 
 async function uploadToS3(buildDir, repoName) {
     const folderPrefix = '';
@@ -84,51 +69,6 @@ function getContentType(file) {
     }
 }
 
-async function enableStaticWebsiteHosting() {
-    const params = {
-        Bucket: bucketName,
-        WebsiteConfiguration: {
-            IndexDocument: { Suffix: 'index.html' },
-            ErrorDocument: { Key: '404.html' }
-        }
-    };
-
-    try {
-        await s3Client.send(new PutBucketWebsiteCommand(params));
-        console.log('Static website hosting enabled for bucket.');
-    } catch (error) {
-        console.error('Error enabling static website hosting: ', error);
-    }
-}
-
-
-async function setBucketPolicy() {
-    const policyParams = {
-        Bucket: bucketName,
-        Policy: JSON.stringify({
-            Version: '2012-10-17',
-            Statement: [
-                {
-                    Sid: 'PublicReadGetObject',
-                    Effect: 'Allow',
-                    Principal: "*",
-                    Action: 's3:GetObject',
-                    Resource: `arn:aws:s3:::${bucketName}/*`
-                }
-            ]
-        })
-    };
-
-    try {
-        await s3Client.send(new PutBucketPolicyCommand(policyParams));
-        console.log('Bucket policy updated for public read access.');
-    } catch (error) {
-        console.error('Error updating bucket policy: ', error);
-    }
-}
-
 module.exports = {
     uploadToS3,
-    enableStaticWebsiteHosting,
-    setBucketPolicy
 };

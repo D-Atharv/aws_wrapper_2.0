@@ -3,7 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const { startBuild } = require('./controllers/build_controller');
-const errorHandler = require('./middlewares/errorHandler');
+const errorHandler = require('./middlewares/error_handler');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
