@@ -4,11 +4,14 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const { startBuild } = require('./controllers/build_controller');
 const errorHandler = require('./middlewares/error_handler');
+const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(bodyParser.json());
+app.use(cors());
+
 
 app.post('/build', startBuild);
 
