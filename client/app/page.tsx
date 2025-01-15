@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import DeployForm from "./components/DeployForm";
 import DeploymentStatus from "./components/DeploymentStatus";
 
@@ -20,7 +20,10 @@ const App = () => {
         </div>
 
         <div className="max-w-lg mx-auto bg-gray-800 rounded-xl shadow-lg p-8">
-          <DeployForm setDeploymentStatus={setDeploymentStatus} />
+
+          <Suspense fallback={<p>Loading deployment form...</p>}>
+            <DeployForm setDeploymentStatus={setDeploymentStatus} />
+          </Suspense>
           {deploymentStatus && <DeploymentStatus status={deploymentStatus} />}
         </div>
       </div>
