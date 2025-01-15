@@ -9,6 +9,15 @@ async function cloneAndBuildRepo(githubURL) {
         const repoName = githubURL.split('/').pop().replace('.git', '');
         const buildDir = path.join(__dirname, '..', 'builds', repoName);
 
+        //removing build if it already exists
+        if (fs.existsSync(buildDir)) {
+            console.log("buildDir already exists. Removing it first");
+            fs.rmSync(buildDir, { recursive: true, force: true });
+            console.log("removed buildDir and will create a new one");
+        }else{
+            console.log("build directory doesnt exist. proceeding further")
+        }
+
         console.log(`Cloning ${githubURL} into ${buildDir}`);
         await execPromise(`git clone ${githubURL} "${buildDir}"`);
         console.log(`Successfully cloned into ${buildDir}`);
